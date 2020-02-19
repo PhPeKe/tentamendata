@@ -1,0 +1,25 @@
+Het gaat om het volgende: in het script moeten we eerst uitvinden welke vakken in dezelfde periode zitten (var Periode), 
+
+en binnen een jaar (uit Tentamendatum) tegelijk door dezelfde studenten zijn gedaan. 
+
+Je kan bijv een script maakt dat loopt over vakcodes (var RES_Module) en jaar (Tentamendatum) – laat ik dat tentamen X noemen. 
+En dan daarbinnen een loop die vakcodes selecteert met dezelfde opleiding (var Opleiding), periode en jaar – noem ik tentamen Y. 
+
+En dan bekijkt het script voor elk tentamen Y of het door  minstens 50% van dezelfde studenten is gedaan (variabele INS_Studentnummer) als tentamen X. 
+
+Als dat zo is, waren X en Y kennelijk parallel geroosterd. 
+
+Er zou max 1 tentamen Y  moeten zijn dat parallel is met X – 
+als dat niet zo is moet de Y worden gekozen met de hoogste % overlap in studenten (en een warning flag).
+
+ 
+
+De volgende stap is uitrekenen hoeveel dagen er tussen X en Y zitten (variabele Tentamendatum), en welke eerst was. Dat zou niet meer dan 10 dagen moeten zijn. Dan moet er een nieuwe variabele worden aangemaakt, “lag”. Als X eerst was, zou er bij “lag” het aantal dagen verschil, in negatief, moeten komen bij alle entries die horen bij dat tentamen. Als X het latere tentamen was, zou bij  “lag” het aantal dagen verschil, positief, moeten komen. Idem voor Y (het script zal natuurlijk elke combi twee keer vinden, maar dat is niet erg.
+
+ 
+
+Doel van dit al: kijken naar cijfer en naar No Show als functie van lag.
+
+ 
+
+Is het zo duiedlijk? Denk je dat dit lukt?
