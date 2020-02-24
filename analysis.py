@@ -3,12 +3,12 @@ import pandas as pd
 import itertools
 import matplotlib.pyplot as plt
 
-data = pd.read_excel("data/ttm.xlsx")
+data = pd.read_excel("data/ttm_full.xlsx")
 
 # jaar variable
-data["year"] = [int(x.year) for x in data["Tentamendatum"]]
+data["year"] = [int(x.year) for x in data["ROO_Tentamendatum"]]
 # warning flag voor meer dan 1 parallel tentamen Y for tentamen X
-data["parallel>1"] = 0
+# data["parallel>1"] = 0
 # lag variable
 data["lag"] = 999
 
@@ -16,9 +16,9 @@ data["lag"] = 999
 tegelijkertijd = {}
 for year in set(data["year"]):
     tegelijkertijd[year] = {}
-    for periode in set(data["Periode"]):
+    for periode in set(data["ROO_Periode_activiteit"]):
         tegelijkertijd[year][periode] = {}
-        vakken_zelfde_periode_jaar = data.loc[data["Periode"] == periode].loc[data["year"] == year]
+        vakken_zelfde_periode_jaar = data.loc[data["ROO_Periode_activiteit"] == periode].loc[data["year"] == year]
         # list studenten per vak
         studenten_per_vak = {vak: vakken_zelfde_periode_jaar.loc[vakken_zelfde_periode_jaar["RES_Module_code"] == vak][
             "INS_Studentnummer"] for vak in set(vakken_zelfde_periode_jaar["RES_Module_code"])}
@@ -40,30 +40,39 @@ for year in set(data["year"]):
                 print("Data Info:")
                 date_vak1 = list(set(
                     vakken_zelfde_periode_jaar.loc[vakken_zelfde_periode_jaar["RES_Module_code"] == vak1][
-                        "Tentamendatum"]))[0]
+                        "ROO_Tentamendatum"]))[0]
                 date_vak2 = list(set(
                     vakken_zelfde_periode_jaar.loc[vakken_zelfde_periode_jaar["RES_Module_code"] == vak2][
-                        "Tentamendatum"]))[0]
+                        "ROO_Tentamendatum"]))[0]
                 print(date_vak1)
                 print(date_vak2)
                 # Als X eerst was, zou er bij “lag” het aantal dagen verschil, in negatief, moeten
                 # Als X het latere tentamen was, zou bij  “lag” het aantal dagen verschil, positief, moeten komen.
                 lag = (date_vak1 - date_vak2).days
                 print("Tijd tussen " + str(vak1) + " en " + str(vak2) + ": " + str(lag) + " dagen")
-                tegelijkertijd[year][periode][vak1 + " " + vak2] = {"averlap": n_overlap,
-                                                                    "lag": lag,
-                                                                    "date vak1": date_vak1,
-                                                                    "date vak2": date_vak2}
-            print("")
-    # break
-# break
-"""
-# Checken of tentamen X of Y al in de lijst staat (meer dan een dubbele rostering)
-# Als het zo is, vervang met de hoogste overlap en maak warning flag voor het andere tentamen
-if vak1 in tentamen_X:
-	print(str(vak1) + " staat dubbel in de lijst met")
-if vak2 in tentamen_X:
-	pass
-tentamen_X.append(vak1)
-tentamen_X.append(vak2)
-"""
+                # filteren van meer dan 10 dagen interval tussen tentamens
+                if -10 < lag < 10:
+                    tegelijkertijd[year][periode][vak1 + " " + vak2] = {"overlap": n_overlap,
+                                                                        "lag": lag,
+                                                                        "date vak1": date_vak1,
+                                                                        "date vak2": date_vak2}
+                    # Set variable "lag"
+                    previous_lag_vak1 = list(set(data["lag"].loc[data["year"] == year]
+                                                            .loc[data["ROO_Periode_activiteit"] == periode]
+                                                            .loc[data["RES_Module_code"] == vak1]
+                                                 ))[0]
+                    previous_lag_vak2 = list(set(data["lag"].loc[data["year"] == year]
+                                                            .loc[data["ROO_Periode_activiteit"] == periode]
+                                                            .loc[data["RES_Module_code"] == vak2]
+                                                 ))[0]
+                    # Als het gevonden "lag" dichterbij is dan het gegeven "lag" wordt de data geupdated
+                    if abs(previous_lag_vak1) > abs(lag):
+                        data.loc[(data.year == year) &
+                                 (data.ROO_Periode_activiteit == periode) &
+                                 (data.RES_Module_code == vak1), "lag"] = lag
+                    if abs(previous_lag_vak2) > abs(lag):
+                        data.loc[(data.year == year) &
+                                 (data.ROO_Periode_activiteit == periode) &
+                                 (data.RES_Module_code == vak1), "lag"] = -lag
+
+data.to_excel("data/tentamendata_lag.xlsx")
